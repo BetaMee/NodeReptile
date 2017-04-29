@@ -1,0 +1,16 @@
+{
+  "name": "p2p-stream",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:BetaMee/p2p-stream.git",
+  "author": "betamee <gongxq95@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start":"nodemon ./server.js localhost 8080"
+  },
+  "dependencies": {
+    "bittorrent-tracker": "^9.2.2",
+    "express": "^4.15.2",
+    "nodemon": "^1.11.0"
+  }
+}
