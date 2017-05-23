@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "bittorrent-tracker": "^9.2.2",
-    "express": "^4.15.2",
+    "express": "^4.15.3",
     "magnet-uri": "^5.1.7",
     "nodemon": "^1.11.0"
   }
