@@ -1,0 +1,23 @@
+{
+    "extends": "airbnb-base",
+    "parser": "babel-eslint",
+    "env": {
+        "node": true
+    },
+    "parserOptions": {
+        "sourceType": "module",
+        "allowImportExportEverywhere": true
+    },
+    "rules": {
+        // 缩进为4个空格（默认值）
+        "indent": 2,
+        "no-var": 2,
+        "no-alert": 2,
+        "no-console": 0,
+        "no-unused-vars":"warn",
+        "linebreak-style":[1,"windows"],
+        "global-require":"warn",
+        "no-underscore-dangle":"off",
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }]
+    }
+}
