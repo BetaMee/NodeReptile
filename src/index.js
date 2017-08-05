@@ -1,5 +1,3 @@
-import http from 'http';
-import Url from 'url';
 import superagent from 'superagent';
 import cheerio from 'cheerio';
 
