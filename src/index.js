@@ -1,5 +1,5 @@
 import superagent from 'superagent';
-import cheerio from 'cheerio';
+import { handlePageRes, handlePostRes } from './handle';
 
 /**
  * 生成url
@@ -14,29 +14,10 @@ const generatePageUrl = (pageNum) => {
 };
 
 /**
- * 解析html,获取参数链接
- * @param {*} $
- */
-const handleHtml = ($) => {
-  const linkArr = [];
-  $('table#threadlisttableid>tbody')
-    .each((idx, element) => {
-      const $tbody = $(element);
-      if (/^normalthread/.test($tbody.attr('id'))) {
-        linkArr.push($tbody.find('.xst').attr('href'));
-      }
-    });
-  return linkArr;
-};
-
-
-/**
  * 将superagent转换为promise对象
  * @param {*} pageLink
  */
-const requestPage = (pageLink) => {
-  return Promise.resolve(superagent.get(pageLink));
-}
+const requestPage = pageLink => () => Promise.resolve(superagent.get(pageLink));
 
 const generateTasks = (sourceArr, singleTaskNum) => {
   const sourceArrLength = sourceArr.length; // 数组长度
@@ -60,10 +41,52 @@ const generateTasks = (sourceArr, singleTaskNum) => {
   return TaskQueues;
 };
 
+// 手动启动运行队列
+const runTasks = (TaskQueues) => {
+  const RunQueues = [];
+  for (let i = 0; i < TaskQueues.length; i++) {
+    RunQueues.push(TaskQueues[i]());
+  }
+  return RunQueues;
+};
 
-const main = () => {
-  const arr = generatePageUrl(10);
-  const q = generateTasks(arr, 1);
-  console.log(q);
-}
+const recordValue = (results, handleValue, value) => {
+  results.push(handleValue(value));
+  return results;
+};
 
+
+/**
+ * 获取帖子链接
+ */
+const getPostLinks = (pageUrlArr) => {
+  const TaskQueues = generateTasks(pageUrlArr, 20); // 生成任务队列
+  const pushValue = recordValue.bind(null, [], handlePageRes);
+  return TaskQueues.reduce((promise, task) =>
+    promise.then(() => Promise.all(runTasks(task))).then(pushValue)
+  , Promise.resolve());
+};
+
+
+const getPostInfo = (postUrlArr) => {
+  const TaskQueues = generateTasks(postUrlArr, 20); // 生成任务队列
+  const pushValue = recordValue.bind(null, [], handlePostRes);
+  return TaskQueues.reduce((promise, task) =>
+    promise.then(() => Promise.all(runTasks(task))).then(pushValue)
+  , Promise.resolve());
+};
+
+
+(async () => {
+  // 主程序
+  try {
+    console.log('start');
+    // 获取帖子链接并进行处理
+    const postLinks = await getPostLinks(generatePageUrl(1000));
+    const result = await getPostInfo(postLinks);
+    // 写入excel
+
+  } catch (err) {
+    console.log(err);
+  }
+})();
