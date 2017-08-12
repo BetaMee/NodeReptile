@@ -29,32 +29,41 @@ const handleHtml = ($) => {
   return linkArr;
 };
 
+
 /**
- * 处理响应
- * @param {*响应} response
+ * 将superagent转换为promise对象
+ * @param {*} pageLink
  */
-const handleResponse = (response) => {
-  const results = [];
-  for (let i = 0; i < response.length; i++) {
-    const $ = cheerio.load(response[0].text); // 将每一个页面用cheerio处理
-    const linkArr = handleHtml($); // 传给handleHtml，返回一个链接数组
-    results.push(...linkArr);
+const requestPage = (pageLink) => {
+  return Promise.resolve(superagent.get(pageLink));
+}
+
+const generateTasks = (sourceArr, singleTaskNum) => {
+  const sourceArrLength = sourceArr.length; // 数组长度
+  const TaskCount = Math.ceil(sourceArrLength / singleTaskNum); // 分组的人物次数
+  const TaskQueues = []; // 总的任务队列，二维数组
+  let childTaskQueue; // 子队列
+  for (let i = 0; i < TaskCount; i++) {
+    childTaskQueue = [];
+    if (i === TaskCount - 1) { // 当在最后一次循环中
+      const lastChildTaskLength = sourceArrLength - (i * singleTaskNum); // 取最后一组的数量
+      for (let j = i * singleTaskNum; j < ((i * singleTaskNum) + lastChildTaskLength); j++) {
+        childTaskQueue.push(requestPage(sourceArr[j]));
+      }
+    } else { // 其余循环中
+      for (let j = i * singleTaskNum; j < (i + 1) * singleTaskNum; j++) {
+        childTaskQueue.push(requestPage(sourceArr[j]));
+      }
+    }
+    TaskQueues.push(childTaskQueue);
   }
-  console.log(results.length);
-  return results;
+  return TaskQueues;
 };
 
 
-/**
- * 异步获取汇报页的链接
- */
-const asyncGetForumPage = async () => {
-  const pageUrlArr = generatePageUrl(1000);
-  const results = [];
-  for (let i = 0; i < pageUrlArr.length; i++) {
-    results.push(superagent.get(pageUrlArr[i]));
-  }
-  handleResponse(await Promise.all(results));
-};
+const main = () => {
+  const arr = generatePageUrl(10);
+  const q = generateTasks(arr, 1);
+  console.log(q);
+}
 
-asyncGetForumPage();
