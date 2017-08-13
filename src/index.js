@@ -1,5 +1,7 @@
+import setCharset from 'superagent-charset';
 import superagent from 'superagent';
 import { handlePageRes, handlePostRes } from './handle';
+import exportDataToExcel from './excel';
 
 /**
  * 生成url
@@ -17,7 +19,7 @@ const generatePageUrl = (pageNum) => {
  * 将superagent转换为promise对象
  * @param {*} pageLink
  */
-const requestPage = pageLink => () => Promise.resolve(superagent.get(pageLink));
+const requestPage = pageLink => () => Promise.resolve(setCharset(superagent).get(pageLink).charset('gbk'));
 
 const generateTasks = (sourceArr, singleTaskNum) => {
   const sourceArrLength = sourceArr.length; // 数组长度
@@ -51,7 +53,8 @@ const runTasks = (TaskQueues) => {
 };
 
 const recordValue = (results, handleValue, value) => {
-  results.push(handleValue(value));
+  const result = handleValue(value);
+  results.push(...result);
   return results;
 };
 
@@ -60,16 +63,19 @@ const recordValue = (results, handleValue, value) => {
  * 获取帖子链接
  */
 const getPostLinks = (pageUrlArr) => {
-  const TaskQueues = generateTasks(pageUrlArr, 20); // 生成任务队列
+  const TaskQueues = generateTasks(pageUrlArr, 10); // 生成任务队列
   const pushValue = recordValue.bind(null, [], handlePageRes);
   return TaskQueues.reduce((promise, task) =>
     promise.then(() => Promise.all(runTasks(task))).then(pushValue)
   , Promise.resolve());
 };
 
-
+/**
+ * 获取帖子信息
+ * @param {*} postUrlArr
+ */
 const getPostInfo = (postUrlArr) => {
-  const TaskQueues = generateTasks(postUrlArr, 20); // 生成任务队列
+  const TaskQueues = generateTasks(postUrlArr, 10); // 生成任务队列
   const pushValue = recordValue.bind(null, [], handlePostRes);
   return TaskQueues.reduce((promise, task) =>
     promise.then(() => Promise.all(runTasks(task))).then(pushValue)
@@ -82,11 +88,18 @@ const getPostInfo = (postUrlArr) => {
   try {
     console.log('start');
     // 获取帖子链接并进行处理
-    const postLinks = await getPostLinks(generatePageUrl(1000));
-    const result = await getPostInfo(postLinks);
+    const postLinks = await getPostLinks(generatePageUrl(100));
+    console.log('ddd');
+    console.log(postLinks.length);
+    console.log(typeof postLinks[0]);
+    // 根据帖子链接发送请求并处理
+    const posts = await getPostInfo(postLinks);
+    console.log(posts.length);
     // 写入excel
-
+    exportDataToExcel(posts);
+    console.log('end');
   } catch (err) {
+    console.log('err');
     console.log(err);
   }
 })();

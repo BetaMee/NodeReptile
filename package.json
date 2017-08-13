@@ -13,6 +13,7 @@
     "cheerio": "^1.0.0-rc.2",
     "nodemon": "^1.11.0",
     "superagent": "^3.5.2",
+    "superagent-charset": "^1.2.0",
     "xlsx": "^0.11.0"
   },
   "devDependencies": {

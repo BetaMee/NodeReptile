@@ -1,0 +1,16 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+        "type": "node",
+        "request": "attach",
+        "name": "附加于已启动的 Node 服务器（inspect模式）",
+        "port": 9229,
+        "restart": true
+    }
+  ]
+}
