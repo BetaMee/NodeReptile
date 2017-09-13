@@ -29,8 +29,8 @@ const generateTasks = (sourceArr, singleTaskNum) => {
   for (let i = 0; i < TaskCount; i++) {
     childTaskQueue = [];
     if (i === TaskCount - 1) { // 当在最后一次循环中
-      const lastChildTaskLength = sourceArrLength - (i * singleTaskNum); // 取最后一组的数量
-      for (let j = i * singleTaskNum; j < ((i * singleTaskNum) + lastChildTaskLength); j++) {
+      // const lastChildTaskLength = sourceArrLength - (i * singleTaskNum); // 取最后一组的数量
+      for (let j = i * singleTaskNum; j < sourceArrLength; j++) {
         childTaskQueue.push(requestPage(sourceArr[j]));
       }
     } else { // 其余循环中
@@ -40,11 +40,13 @@ const generateTasks = (sourceArr, singleTaskNum) => {
     }
     TaskQueues.push(childTaskQueue);
   }
+  // console.log(typeof TaskQueues[0][0]);
   return TaskQueues;
 };
 
 // 手动启动运行队列
 const runTasks = (TaskQueues) => {
+  // console.log(TaskQueues);
   const RunQueues = [];
   for (let i = 0; i < TaskQueues.length; i++) {
     RunQueues.push(TaskQueues[i]());
@@ -53,6 +55,7 @@ const runTasks = (TaskQueues) => {
 };
 
 const recordValue = (results, handleValue, value) => {
+  // console.log(value);
   const result = handleValue(value);
   results.push(...result);
   return results;
@@ -63,7 +66,7 @@ const recordValue = (results, handleValue, value) => {
  * 获取帖子链接
  */
 const getPostLinks = (pageUrlArr) => {
-  const TaskQueues = generateTasks(pageUrlArr, 10); // 生成任务队列
+  const TaskQueues = generateTasks(pageUrlArr, 1); // 生成任务队列
   const pushValue = recordValue.bind(null, [], handlePageRes);
   return TaskQueues.reduce((promise, task) =>
     promise.then(() => Promise.all(runTasks(task))).then(pushValue)
@@ -75,7 +78,7 @@ const getPostLinks = (pageUrlArr) => {
  * @param {*} postUrlArr
  */
 const getPostInfo = (postUrlArr) => {
-  const TaskQueues = generateTasks(postUrlArr, 10); // 生成任务队列
+  const TaskQueues = generateTasks(postUrlArr, 1); // 生成任务队列
   const pushValue = recordValue.bind(null, [], handlePostRes);
   return TaskQueues.reduce((promise, task) =>
     promise.then(() => Promise.all(runTasks(task))).then(pushValue)
@@ -89,14 +92,16 @@ const getPostInfo = (postUrlArr) => {
     console.log('start');
     // 获取帖子链接并进行处理
     const postLinks = await getPostLinks(generatePageUrl(100));
-    console.log('ddd');
     console.log(postLinks.length);
-    console.log(typeof postLinks[0]);
+    // 去重
+    const postLinksSet = [...new Set(postLinks)];
+    console.log(postLinksSet.length);
     // 根据帖子链接发送请求并处理
-    const posts = await getPostInfo(postLinks);
+    const posts = await getPostInfo(postLinksSet);
     console.log(posts.length);
     // 写入excel
     exportDataToExcel(posts);
+
     console.log('end');
   } catch (err) {
     console.log('err');

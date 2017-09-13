@@ -85,7 +85,7 @@ const handlePostRes = (response) => {
   const results = [];
   for (let i = 0; i < response.length; i++) {
     const $ = cheerio.load(response[0].text); // 将每一个页面用cheerio处理
-    const post = handlePostHtml($); // 传给handleHtml，返回一个链接数组
+    const post = handlePostHtml($);
     results.push(post);
   }
   return results;

@@ -49,7 +49,7 @@ const exportDataToExcel = (_data) => {
   };
 
   // 导出 Excel
-  XLSX.writeFile(wb, path.resolve(__dirname, '../dist/data.xlsx'));
+  XLSX.writeFile(wb, path.resolve(__dirname, '../dist/testN.xlsx'));
 };
 
 export default exportDataToExcel;
